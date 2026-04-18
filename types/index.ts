@@ -18,6 +18,7 @@ export interface ParsedResume {
   skills: string[];
   hardSkills: string[];
   softSkills: string[];
+  tools: string[];
   domain: string;
   experienceLevel: ExperienceLevel;
   name: string;

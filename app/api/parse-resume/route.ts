@@ -8,23 +8,25 @@ import { extractSkillsFromText, detectExperienceLevel, extractName, extractEmail
 
 const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
 
-// ── Phase 1: Extract ALL skills from resume (any domain) ──────────────────────
+// ── Phase 1: Extract ALL skills from resume (any domain, any engineering field) ─
 function buildSkillPrompt(rawText: string): string {
-  return `Extract all skills from the resume text below.
+  return `You are an expert resume parser with knowledge across ALL engineering domains — including ECE, EEE, Mechanical, Civil, Chemical, and more. Do NOT assume the candidate is from a software/CSE background.
 
-Rules:
-- Extract BOTH hard skills and soft skills
-- Do NOT limit to tech or CSE skills — cover ALL industries and domains
-- Include domain-specific tools, certifications, methodologies, and techniques
-- Include industry knowledge areas (e.g., "patient triage", "financial modeling", "curriculum design")
-- Normalize skill names to standard professional terminology
-- No duplicates, no overly generic terms
+Extract skills from the resume below. Include:
+- Electronics, circuit design, signal processing, embedded systems, VLSI, PCB, communication protocols, instrumentation, control systems, etc.
+- Domain-specific tools (MATLAB, Cadence, Multisim, LabVIEW, Proteus, etc.)
+- Software tools, programming languages, frameworks if present
+- Healthcare, finance, legal, education domain skills if present
+- Certifications, methodologies, and soft skills
 
-Return ONLY a JSON object, no extra text:
+Return ONLY this JSON, no extra text:
 {
+  "domain": "detected domain (e.g., Electronics and Communication, Electrical Engineering, Mechanical Engineering, Software Engineering, Healthcare, Finance)",
+  "experience_level": "Fresher | Junior | Mid-level | Senior",
   "hard_skills": ["skill1", "skill2"],
   "soft_skills": ["skill1", "skill2"],
-  "domain": "detected domain (e.g., Software Engineering, Healthcare, Finance, Civil Engineering)"
+  "tools": ["tool1", "tool2"],
+  "certifications": ["cert1"]
 }
 
 Resume Text:
@@ -160,25 +162,29 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Step 2: Phase 1 — extract skills comprehensively (any domain)
+    // Step 2: Phase 1 — extract skills comprehensively (any domain, any engineering field)
     let hardSkills: string[] = [];
     let softSkills: string[] = [];
-    let domain = "Software Engineering";
+    let tools: string[] = [];
+    let domain = "Engineering";
+    let geminiExpLevel = "";
 
     if (apiKey) {
       const skillRaw = await callGemini(buildSkillPrompt(rawText), apiKey, "skills");
       const skillData = parseJSON(skillRaw);
-      if (skillData?.hard_skills) {
-        hardSkills = (skillData.hard_skills as string[]).map(s => s.toLowerCase().trim()).filter(s => s.length > 1);
-        softSkills = (skillData.soft_skills as string[]).map(s => s.toLowerCase().trim()).filter(s => s.length > 1);
-        domain     = skillData.domain || "Software Engineering";
-        console.log(`[parse] Skills extracted: ${hardSkills.length} hard, ${softSkills.length} soft, domain: ${domain}`);
+      if (skillData) {
+        hardSkills   = (skillData.hard_skills   ?? []).map((s: string) => s.toLowerCase().trim()).filter((s: string) => s.length > 1);
+        softSkills   = (skillData.soft_skills   ?? []).map((s: string) => s.toLowerCase().trim()).filter((s: string) => s.length > 1);
+        tools        = (skillData.tools         ?? []).map((s: string) => s.toLowerCase().trim()).filter((s: string) => s.length > 1);
+        domain       = skillData.domain         || "Engineering";
+        geminiExpLevel = skillData.experience_level || "";
+        console.log(`[parse] Skills: ${hardSkills.length} hard, ${softSkills.length} soft, ${tools.length} tools | domain: ${domain} | level: ${geminiExpLevel}`);
       }
     }
 
-    // Merge with keyword scan for maximum coverage
+    // Merge all skill sources for maximum coverage
     const keywordSkills = extractSkillsFromText(rawText);
-    const allExtracted  = [...new Set([...hardSkills, ...keywordSkills])];
+    const allExtracted  = [...new Set([...hardSkills, ...tools, ...keywordSkills])];
 
     // Step 3: Phase 2 — full analysis using extracted skills
     let g: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -203,6 +209,14 @@ export async function POST(req: NextRequest) {
       ...(Array.isArray(src.skills) ? src.skills.map((s: string) => s.toLowerCase().trim()) : []),
     ])].filter(s => s.length > 1);
 
+    // Map experience_level from Gemini to our format
+    const expLevelMap: Record<string, "Beginner"|"Intermediate"|"Advanced"> = {
+      "fresher": "Beginner", "junior": "Beginner",
+      "mid-level": "Intermediate", "mid level": "Intermediate",
+      "senior": "Advanced",
+    };
+    const mappedLevel = expLevelMap[geminiExpLevel.toLowerCase()] ?? null;
+
     const resume = {
       rawText,
       name:              src.name || extractName(rawText),
@@ -211,14 +225,16 @@ export async function POST(req: NextRequest) {
       location:          src.location || "",
       currentRole:       src.currentRole || "",
       yearsOfExperience: typeof src.yearsOfExperience === "number" ? src.yearsOfExperience : 0,
-      experienceLevel:   (["Beginner","Intermediate","Advanced"] as const).includes(src.experienceLevel)
-                           ? src.experienceLevel as "Beginner"|"Intermediate"|"Advanced"
-                           : "Intermediate" as const,
+      experienceLevel:   mappedLevel
+                           ?? ((["Beginner","Intermediate","Advanced"] as const).includes(src.experienceLevel)
+                               ? src.experienceLevel as "Beginner"|"Intermediate"|"Advanced"
+                               : "Intermediate" as const),
       education:         src.education || "",
       summary:           src.summary || "",
       skills:            mergedSkills,
       hardSkills,
       softSkills,
+      tools,
       domain,
       workExperience:    Array.isArray(src.workExperience) ? src.workExperience : [],
       projects:          Array.isArray(src.projects) ? src.projects : [],

@@ -416,6 +416,23 @@ export default function UploadPage() {
                   </div>
                 )}
 
+                {/* Tools */}
+                {(result.resume as any).tools?.length > 0 && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div className="mb-4">
+                    <p className="text-xs text-[var(--text-faint)] mb-2">Tools & Software ({(result.resume as any).tools.length})</p> {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {(result.resume as any).tools.map((s: string, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        <motion.span key={s}
+                          initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.1, delay: i * 0.01 }}
+                          className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800 transition-colors duration-150">
+                          {s}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Soft skills */}
                 {(result.resume as any).softSkills?.length > 0 && ( // eslint-disable-line @typescript-eslint/no-explicit-any
                   <div>
