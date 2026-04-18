@@ -6,18 +6,44 @@ import { generateRoadmap } from "@/lib/roadmapGenerator";
 import { generateCareerTrajectory } from "@/lib/careerEngine";
 import { extractSkillsFromText, detectExperienceLevel, extractName, extractEmail } from "@/lib/skillDatabase";
 
-// Models to try in order — gemini-2.5-flash is fastest and most capable
 const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
 
-function buildPrompt(rawText: string): string {
-  // Limit text to avoid slow responses — 6000 chars is enough for any resume
-  const text = rawText.slice(0, 6000);
-  return `You are a resume parser. Extract data from this resume and return JSON only.
+// ── Phase 1: Extract ALL skills from resume (any domain) ──────────────────────
+function buildSkillPrompt(rawText: string): string {
+  return `Extract all skills from the resume text below.
 
-No markdown. No explanation. Return ONLY this JSON structure:
+Rules:
+- Extract BOTH hard skills and soft skills
+- Do NOT limit to tech or CSE skills — cover ALL industries and domains
+- Include domain-specific tools, certifications, methodologies, and techniques
+- Include industry knowledge areas (e.g., "patient triage", "financial modeling", "curriculum design")
+- Normalize skill names to standard professional terminology
+- No duplicates, no overly generic terms
 
+Return ONLY a JSON object, no extra text:
 {
-  "name": "full name",
+  "hard_skills": ["skill1", "skill2"],
+  "soft_skills": ["skill1", "skill2"],
+  "domain": "detected domain (e.g., Software Engineering, Healthcare, Finance, Civil Engineering)"
+}
+
+Resume Text:
+${rawText.slice(0, 5000)}`;
+}
+
+// ── Phase 2: Full resume analysis using extracted skills ──────────────────────
+function buildAnalysisPrompt(rawText: string, hardSkills: string[], softSkills: string[], domain: string): string {
+  const allSkills = [...hardSkills, ...softSkills];
+  return `You are a resume analyst. Using the resume text and pre-extracted skills below, return a complete analysis as JSON only. No markdown. No explanation.
+
+EXTRACTED SKILLS (${allSkills.length} total):
+Hard Skills: ${hardSkills.join(", ")}
+Soft Skills: ${softSkills.join(", ")}
+Domain: ${domain}
+
+Return ONLY this JSON:
+{
+  "name": "full name from resume",
   "email": "email or empty",
   "phone": "phone or empty",
   "location": "city/country or empty",
@@ -25,8 +51,7 @@ No markdown. No explanation. Return ONLY this JSON structure:
   "yearsOfExperience": 0,
   "experienceLevel": "Beginner",
   "education": "degree, field, institution or empty",
-  "summary": "2-sentence summary",
-  "skills": ["skill1","skill2"],
+  "summary": "2-sentence professional summary based on actual resume content",
   "workExperience": [{"title":"","company":"","duration":"","highlights":[""]}],
   "projects": [{"name":"","description":"","techStack":[""]}],
   "certifications": [],
@@ -44,93 +69,71 @@ No markdown. No explanation. Return ONLY this JSON structure:
 }
 
 Rules:
-- skills: every technical skill, tool, language, framework mentioned
-- matchedSkills: candidate's skills that appear in requiredSkills
-- missingSkills: requiredSkills NOT in candidate's skills  
+- matchedSkills: skills from requiredSkills that candidate HAS (check against extracted hard_skills)
+- missingSkills: requiredSkills NOT in candidate's skills
 - matchPercent: round(matchedSkills.length / requiredSkills.length * 100)
-- roadmap: 6-8 most impactful missing skills with specific reasons
-- career: realistic roles based on actual skills, 3 items each array
-- experienceLevel: Beginner=0-2yrs, Intermediate=2-5yrs, Advanced=5+yrs
+- roadmap: 6-8 most impactful missing skills, reasons specific to this candidate
+- career: realistic roles based on actual skills and domain, 3 items each
+- experienceLevel: Beginner=0-2yrs, Intermediate=2-5yrs, Advanced=5+yrs or senior/lead
 
-RESUME:
-${text}`;
+Resume Text:
+${rawText.slice(0, 4000)}`;
 }
 
-async function callGemini(rawText: string, apiKey: string): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+// ── Call Gemini with retry across models ──────────────────────────────────────
+async function callGemini(prompt: string, apiKey: string, label: string): Promise<string | null> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const prompt = buildPrompt(rawText);
 
   for (const modelName of MODELS) {
     try {
-      console.log(`[parse] Trying ${modelName} (text: ${rawText.length} chars)...`);
+      console.log(`[parse:${label}] Trying ${modelName}...`);
       const model = genAI.getGenerativeModel({
         model: modelName,
         generationConfig: { temperature: 0, maxOutputTokens: 8192 },
       });
-
       const result = await model.generateContent(prompt);
-      let text = result.response.text().trim();
-
-      // Strip markdown fences if present
-      text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
-
-      // Find JSON boundaries
-      const start = text.indexOf("{");
-      const end   = text.lastIndexOf("}");
-      if (start === -1 || end === -1) {
-        console.warn(`[parse] ${modelName}: no JSON found in response`);
-        continue;
-      }
-
-      const parsed = JSON.parse(text.slice(start, end + 1));
-
-      // Validate minimum required fields
-      if (!parsed.name || !Array.isArray(parsed.skills)) {
-        console.warn(`[parse] ${modelName}: invalid response structure`);
-        continue;
-      }
-
-      console.log(`[parse] ✓ ${modelName}: name="${parsed.name}", skills=${parsed.skills.length}, jobs=${parsed.jobMatches?.length}`);
-      return parsed;
-
+      const text = result.response.text().trim();
+      console.log(`[parse:${label}] ✓ ${modelName} responded (${text.length} chars)`);
+      return text;
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       const msg = String(err?.message ?? err);
-      const isRateLimit = msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED");
-      console.warn(`[parse] ✗ ${modelName}: ${msg.slice(0, 150)}`);
-      if (isRateLimit) {
-        console.log(`[parse] Rate limited on ${modelName}, waiting 2s...`);
+      console.warn(`[parse:${label}] ✗ ${modelName}: ${msg.slice(0, 120)}`);
+      if (msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED")) {
         await new Promise(r => setTimeout(r, 2000));
       }
     }
   }
-
-  console.log("[parse] All Gemini models failed — using local fallback");
   return null;
+}
+
+function parseJSON(raw: string | null): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (!raw) return null;
+  try {
+    let text = raw.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
+    const start = text.indexOf("{");
+    const end   = text.lastIndexOf("}");
+    if (start === -1 || end === -1) return null;
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    return null;
+  }
 }
 
 function buildLocalFallback(rawText: string) {
   const skills = extractSkillsFromText(rawText);
   const { level, years } = detectExperienceLevel(rawText, skills);
   return {
-    name:              extractName(rawText),
-    email:             extractEmail(rawText),
-    phone:             "",
-    location:          "",
-    currentRole:       "",
-    yearsOfExperience: years,
-    experienceLevel:   level,
-    education:         "",
-    summary:           "",
-    skills,
-    workExperience:    [],
-    projects:          [],
-    certifications:    [],
-    jobMatches:        null,
-    roadmap:           null,
-    career:            null,
+    name: extractName(rawText), email: extractEmail(rawText),
+    phone: "", location: "", currentRole: "",
+    yearsOfExperience: years, experienceLevel: level,
+    education: "", summary: "",
+    skills, workExperience: [], projects: [], certifications: [],
+    jobMatches: null, roadmap: null, career: null,
+    hard_skills: skills, soft_skills: [], domain: "Software Engineering",
   };
 }
 
+// ── Main route ────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -139,7 +142,7 @@ export async function POST(req: NextRequest) {
     if (!file) return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     if (file.type !== "application/pdf") return NextResponse.json({ error: "Only PDF files are supported" }, { status: 400 });
 
-    // 1. Extract raw text from PDF
+    // Step 1: Extract raw text from PDF
     const buffer = Buffer.from(await file.arrayBuffer());
     let rawText = "";
     try {
@@ -155,17 +158,50 @@ export async function POST(req: NextRequest) {
 
     console.log(`[parse] PDF extracted: ${rawText.length} chars`);
 
-    // 2. Try Gemini — one call, all models
     const apiKey = process.env.GEMINI_API_KEY;
-    const g = apiKey ? await callGemini(rawText, apiKey) : null;
 
-    // 3. Use Gemini result or local fallback
-    const src = g ?? buildLocalFallback(rawText);
+    // Step 2: Phase 1 — extract skills comprehensively (any domain)
+    let hardSkills: string[] = [];
+    let softSkills: string[] = [];
+    let domain = "Software Engineering";
 
-    // 4. Merge Gemini skills with keyword scan for maximum coverage
+    if (apiKey) {
+      const skillRaw = await callGemini(buildSkillPrompt(rawText), apiKey, "skills");
+      const skillData = parseJSON(skillRaw);
+      if (skillData?.hard_skills) {
+        hardSkills = (skillData.hard_skills as string[]).map(s => s.toLowerCase().trim()).filter(s => s.length > 1);
+        softSkills = (skillData.soft_skills as string[]).map(s => s.toLowerCase().trim()).filter(s => s.length > 1);
+        domain     = skillData.domain || "Software Engineering";
+        console.log(`[parse] Skills extracted: ${hardSkills.length} hard, ${softSkills.length} soft, domain: ${domain}`);
+      }
+    }
+
+    // Merge with keyword scan for maximum coverage
     const keywordSkills = extractSkillsFromText(rawText);
-    const geminiSkills  = (src.skills ?? []).map((s: string) => s.toLowerCase().trim()).filter((s: string) => s.length > 1);
-    const mergedSkills  = [...new Set([...geminiSkills, ...keywordSkills])];
+    const allExtracted  = [...new Set([...hardSkills, ...keywordSkills])];
+
+    // Step 3: Phase 2 — full analysis using extracted skills
+    let g: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (apiKey && allExtracted.length > 0) {
+      const analysisRaw = await callGemini(
+        buildAnalysisPrompt(rawText, allExtracted, softSkills, domain),
+        apiKey,
+        "analysis"
+      );
+      g = parseJSON(analysisRaw);
+      if (g?.name) {
+        console.log(`[parse] Analysis: name="${g.name}", jobs=${g.jobMatches?.length}`);
+      } else {
+        console.warn("[parse] Analysis returned invalid JSON, using fallback");
+      }
+    }
+
+    // Step 4: Build final resume object
+    const src = g ?? buildLocalFallback(rawText);
+    const mergedSkills = [...new Set([
+      ...allExtracted,
+      ...(Array.isArray(src.skills) ? src.skills.map((s: string) => s.toLowerCase().trim()) : []),
+    ])].filter(s => s.length > 1);
 
     const resume = {
       rawText,
@@ -175,30 +211,34 @@ export async function POST(req: NextRequest) {
       location:          src.location || "",
       currentRole:       src.currentRole || "",
       yearsOfExperience: typeof src.yearsOfExperience === "number" ? src.yearsOfExperience : 0,
-      experienceLevel:   (["Beginner","Intermediate","Advanced"] as const).includes(src.experienceLevel) ? src.experienceLevel : "Intermediate",
+      experienceLevel:   (["Beginner","Intermediate","Advanced"] as const).includes(src.experienceLevel)
+                           ? src.experienceLevel as "Beginner"|"Intermediate"|"Advanced"
+                           : "Intermediate" as const,
       education:         src.education || "",
       summary:           src.summary || "",
       skills:            mergedSkills,
+      hardSkills,
+      softSkills,
+      domain,
       workExperience:    Array.isArray(src.workExperience) ? src.workExperience : [],
       projects:          Array.isArray(src.projects) ? src.projects : [],
       certifications:    Array.isArray(src.certifications) ? src.certifications : [],
     };
 
-    // 5. Job matches — validate and recalculate from Gemini or use local
+    // Step 5: Job matches
     let jobs: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (Array.isArray(src.jobMatches) && src.jobMatches.length >= 7) {
       jobs = src.jobMatches.map((j: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-        const matched = Array.isArray(j.matchedSkills) ? j.matchedSkills : [];
-        const missing = Array.isArray(j.missingSkills) ? j.missingSkills : [];
+        const matched  = Array.isArray(j.matchedSkills) ? j.matchedSkills : [];
+        const missing  = Array.isArray(j.missingSkills) ? j.missingSkills : [];
         const required = Array.isArray(j.requiredSkills) ? j.requiredSkills : [];
-        const pct = required.length > 0 ? Math.round((matched.length / required.length) * 100) : 0;
         return {
           id:             j.id || "",
           title:          j.title || "",
           requiredSkills: required,
           matchedSkills:  matched,
           missingSkills:  missing,
-          matchPercent:   pct,
+          matchPercent:   required.length > 0 ? Math.round((matched.length / required.length) * 100) : 0,
           automationRisk: j.automationRisk || "Medium",
         };
       }).sort((a: any, b: any) => b.matchPercent - a.matchPercent); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -206,14 +246,14 @@ export async function POST(req: NextRequest) {
       jobs = computeJobMatches(mergedSkills);
     }
 
-    // 6. Roadmap
+    // Step 6: Roadmap
     let roadmap: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (Array.isArray(src.roadmap) && src.roadmap.length > 0) {
       roadmap = src.roadmap.filter((r: any) => r?.skill && r?.priority && r?.timeline); // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (!roadmap.length) roadmap = generateRoadmap(jobs);
 
-    // 7. Career trajectory
+    // Step 7: Career trajectory
     let career: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (src.career?.shortTerm?.length && src.career?.midTerm?.length) {
       career = src.career;
@@ -221,6 +261,7 @@ export async function POST(req: NextRequest) {
       career = generateCareerTrajectory(resume, jobs);
     }
 
+    console.log(`[parse] Done: ${resume.name}, ${mergedSkills.length} skills, top job: ${jobs[0]?.title} ${jobs[0]?.matchPercent}%`);
     return NextResponse.json({ resume, jobs, roadmap, career });
 
   } catch (err) {

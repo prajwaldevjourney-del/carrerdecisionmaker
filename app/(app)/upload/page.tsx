@@ -384,23 +384,68 @@ export default function UploadPage() {
                 </motion.div>
               )}
 
-              {/* All skills */}
+              {/* All skills — split by hard/soft */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: 0.2 }}
                 className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5">
-                <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">
-                  All Extracted Skills ({result.resume.skills.length})
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {result.resume.skills.map((s, i) => (
-                    <motion.span key={s}
-                      initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.1, delay: i * 0.012 }}
-                      className="text-xs bg-[var(--bg-subtle)] text-[var(--text-muted)] px-2.5 py-1 rounded-md border border-[var(--border)] hover:border-[var(--border-strong)] hover:text-[var(--text)] transition-colors duration-150">
-                      {s}
-                    </motion.span>
-                  ))}
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest">
+                    All Extracted Skills ({result.resume.skills.length})
+                  </p>
+                  {(result.resume as any).domain && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                    <span className="text-xs bg-[var(--bg-subtle)] text-[var(--text-muted)] border border-[var(--border)] px-2.5 py-1 rounded-full">
+                      {(result.resume as any).domain} // eslint-disable-line @typescript-eslint/no-explicit-any
+                    </span>
+                  )}
                 </div>
+
+                {/* Hard skills */}
+                {(result.resume as any).hardSkills?.length > 0 && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div className="mb-4">
+                    <p className="text-xs text-[var(--text-faint)] mb-2">Hard Skills ({(result.resume as any).hardSkills.length})</p> {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {(result.resume as any).hardSkills.map((s: string, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        <motion.span key={s}
+                          initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.1, delay: i * 0.01 }}
+                          className="text-xs bg-[var(--bg-subtle)] text-[var(--text-muted)] px-2.5 py-1 rounded-md border border-[var(--border)] hover:border-[var(--border-strong)] hover:text-[var(--text)] transition-colors duration-150">
+                          {s}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Soft skills */}
+                {(result.resume as any).softSkills?.length > 0 && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div>
+                    <p className="text-xs text-[var(--text-faint)] mb-2">Soft Skills ({(result.resume as any).softSkills.length})</p> {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {(result.resume as any).softSkills.map((s: string, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        <motion.span key={s}
+                          initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.1, delay: i * 0.01 }}
+                          className="text-xs bg-[var(--bg-subtle)] text-[var(--text-faint)] px-2.5 py-1 rounded-md border border-[var(--border)] transition-colors duration-150">
+                          {s}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Fallback: show all skills if no split */}
+                {!(result.resume as any).hardSkills?.length && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.resume.skills.map((s, i) => (
+                      <motion.span key={s}
+                        initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.1, delay: i * 0.012 }}
+                        className="text-xs bg-[var(--bg-subtle)] text-[var(--text-muted)] px-2.5 py-1 rounded-md border border-[var(--border)] hover:border-[var(--border-strong)] hover:text-[var(--text)] transition-colors duration-150">
+                        {s}
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
 
               {/* Job match preview */}

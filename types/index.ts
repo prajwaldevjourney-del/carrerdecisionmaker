@@ -16,6 +16,9 @@ export interface Project {
 export interface ParsedResume {
   rawText: string;
   skills: string[];
+  hardSkills: string[];
+  softSkills: string[];
+  domain: string;
   experienceLevel: ExperienceLevel;
   name: string;
   email: string;
