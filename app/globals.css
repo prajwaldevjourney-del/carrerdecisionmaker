@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Hide native cursor — GlobalCursor component replaces it */
+html {
+  cursor: none;
+}
+body, a, button, input, textarea, select, label, [role="button"] {
+  cursor: none !important;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Theme tokens ─────────────────────────────────────── */
+:root {
+  --bg:            #ffffff;
+  --bg-subtle:     #f5f5f5;
+  --bg-hover:      #ebebeb;
+  --border:        #e2e2e2;
+  --border-strong: #b8b8b8;
+  --text:          #0a0a0a;
+  --text-muted:    #6b6b6b;
+  --text-faint:    #aaaaaa;
+}
+
+.dark {
+  --bg:            #0c0c0c;
+  --bg-subtle:     #141414;
+  --bg-hover:      #1e1e1e;
+  --border:        #262626;
+  --border-strong: #3a3a3a;
+  --text:          #efefef;
+  --text-muted:    #888888;
+  --text-faint:    #444444;
+}
+
+/* ── Custom cursor ────────────────────────────────────── */
+/* JS sets transform: translate(x - half, y - half) so element is centered */
+
+.c-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--text);
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 999999;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 0.12s ease,
+              width 0.15s ease,
+              height 0.15s ease,
+              background 0.15s ease;
+}
+
+.c-dot.c-hover {
+  width: 12px;
+  height: 12px;
+  background: var(--text-muted);
+}
+
+.c-dot.c-text {
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--text-muted);
+}
+
+.c-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  pointer-events: none !important;
+  z-index: 999998;
+  opacity: 0;
+  will-change: transform;
+  transition: opacity 0.12s ease,
+              width 0.18s ease,
+              height 0.18s ease,
+              border-color 0.18s ease,
+              background 0.18s ease;
+}
+
+.c-ring.c-hover {
+  width: 52px;
+  height: 52px;
+  border-color: var(--text-muted);
+  background: rgba(128,128,128,0.04);
+}
+
+.c-ring.c-text {
+  width: 28px;
+  height: 28px;
+  border-color: var(--text-faint);
+}
+
+/* ── Animated border ──────────────────────────────────── */
+@keyframes border-rotate {
+  0%   { background-position: 0% 50%;   }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%;   }
+}
+
+.animated-border {
+  position: relative;
+  isolation: isolate;
+}
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--border-strong) 0%,
+    var(--text-faint) 50%,
+    var(--border-strong) 100%
+  );
+  background-size: 300% 300%;
+  animation: border-rotate 3s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+                linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0; /* never above content */
+}
+
+/* ── Mesh background ──────────────────────────────────── */
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mesh-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.mesh-orb-1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(150,150,150,0.18) 0%, transparent 70%);
+  top: -140px; left: -100px;
+}
+.mesh-orb-2 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(120,120,120,0.12) 0%, transparent 70%);
+  top: 60px; right: -80px;
+}
+.mesh-orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(100,100,100,0.09) 0%, transparent 70%);
+  bottom: -60px; left: 40%;
+}
+
+.dark .mesh-orb-1 {
+  background: radial-gradient(circle, rgba(255,255,255,0.065) 0%, transparent 70%);
+}
+.dark .mesh-orb-2 {
+  background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+}
+.dark .mesh-orb-3 {
+  background: radial-gradient(circle, rgba(255,255,255,0.025) 0%, transparent 70%);
+}
+
+/* ── Scroll reveal ────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Typewriter cursor ────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.tw-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.82em;
+  background: var(--text-muted);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+/* ── Card interactive ─────────────────────────────────── */
+.card-interactive {
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+}
+.card-interactive:hover {
+  border-color: var(--border-strong) !important;
+  box-shadow: 0 2px 12px -2px rgba(0,0,0,0.08);
+}
+.dark .card-interactive:hover {
+  box-shadow: 0 2px 12px -2px rgba(0,0,0,0.4);
+}
+
+/* ── Navbar blur ──────────────────────────────────────── */
+.navbar-blur {
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  background: rgba(255,255,255,0.85);
+}
+.dark .navbar-blur {
+  background: rgba(12,12,12,0.85);
+}
+
+/* ── Badge (static, no float) ────────────────────────── */
+/* badge-float removed — floating elements are forbidden */
+
+/* ── Step connector ───────────────────────────────────── */
+.step-line {
+  width: 1px;
+  background: var(--border);
+  transition: height 0.2s ease-out;
+}
+
+/* ── Button press feedback ────────────────────────────── */
+button:not(:disabled):active {
+  opacity: 0.85;
+  transform: scale(0.985);
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+/* ── Focus ring ───────────────────────────────────────── */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(128,128,128,0.1);
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ── Selection ────────────────────────────────────────── */
+::selection { background: rgba(128,128,128,0.18); color: var(--text); }
