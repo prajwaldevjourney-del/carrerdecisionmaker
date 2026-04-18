@@ -91,7 +91,13 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold text-[var(--text)] mb-1">
             Good to see you, {resume.name.split(" ")[0]}
           </h1>
-          <p className="text-sm text-[var(--text-muted)]">Here&apos;s your career intelligence snapshot.</p>
+          <p className="text-sm text-[var(--text-muted)]">
+            {resume.currentRole ? (
+              <>{resume.currentRole}{resume.location ? ` · ${resume.location}` : ""} · {resume.experienceLevel}</>
+            ) : (
+              <>Here&apos;s your career intelligence snapshot.</>
+            )}
+          </p>
         </motion.div>
 
         {/* KPI row */}
@@ -106,7 +112,7 @@ export default function DashboardPage() {
             {
               label: "Skills",
               value: <span className="text-3xl font-semibold text-[var(--text)]">{resume.skills.length}</span>,
-              sub: "Identified from resume",
+              sub: resume.currentRole || "Identified from resume",
             },
             {
               label: "Top Match",
@@ -230,33 +236,64 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* All roles bar chart */}
-        <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.1 }}
-          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6 mb-4">
-          <div className="flex items-center justify-between mb-5">
-            <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest">All Role Matches</p>
-            <Link href="/jobs" className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-150">View details →</Link>
-          </div>
-          <div className="space-y-3">
-            {jobs.map((job, i) => (
-              <div key={job.id} className="flex items-center gap-4">
-                <span className="text-xs text-[var(--text-muted)] w-40 truncate shrink-0">{job.title}</span>
-                <div className="flex-1 h-1.5 bg-[var(--bg-subtle)] rounded-full overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${
-                      job.matchPercent >= 70 ? "bg-emerald-500" :
-                      job.matchPercent >= 40 ? "bg-amber-400" : "bg-red-400"
-                    }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${job.matchPercent}%` }}
-                    transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 + i * 0.04 }}
-                  />
+        {/* All roles bar chart + profile summary side by side */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.1 }}
+            className="grad-card col-span-2 bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest">All Role Matches</p>
+              <Link href="/jobs" className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-150">View details →</Link>
+            </div>
+            <div className="space-y-3">
+              {jobs.map((job, i) => (
+                <div key={job.id} className="flex items-center gap-4">
+                  <span className="text-xs text-[var(--text-muted)] w-36 truncate shrink-0">{job.title}</span>
+                  <div className="flex-1 h-1.5 bg-[var(--bg-subtle)] rounded-full overflow-hidden">
+                    <motion.div
+                      className={`h-full rounded-full ${job.matchPercent >= 70 ? "bg-emerald-500" : job.matchPercent >= 40 ? "bg-amber-400" : "bg-red-400"}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${job.matchPercent}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 + i * 0.04 }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-[var(--text)] w-8 text-right shrink-0">{job.matchPercent}%</span>
                 </div>
-                <span className="text-xs font-medium text-[var(--text)] w-8 text-right shrink-0">{job.matchPercent}%</span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Profile summary — real data from resume */}
+          <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.12 }}
+            className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 flex flex-col gap-3">
+            <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest">Profile</p>
+            {resume.summary && (
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">{resume.summary}</p>
+            )}
+            {resume.education && (
+              <div>
+                <p className="text-xs text-[var(--text-faint)] mb-0.5">Education</p>
+                <p className="text-xs text-[var(--text)]">{resume.education}</p>
               </div>
-            ))}
-          </div>
-        </motion.div>
+            )}
+            {resume.location && (
+              <div>
+                <p className="text-xs text-[var(--text-faint)] mb-0.5">Location</p>
+                <p className="text-xs text-[var(--text)]">{resume.location}</p>
+              </div>
+            )}
+            {(resume as any).workExperience?.length > 0 && ( // eslint-disable-line @typescript-eslint/no-explicit-any
+              <div>
+                <p className="text-xs text-[var(--text-faint)] mb-1">Recent Experience</p>
+                {(resume as any).workExperience.slice(0, 2).map((w: any, i: number) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                  <div key={i} className="mb-1">
+                    <p className="text-xs font-medium text-[var(--text)]">{w.title}</p>
+                    <p className="text-xs text-[var(--text-faint)]">{w.company} · {w.duration}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
 
         {/* Feature nav cards */}
         <motion.div {...STAGGER} initial="initial" animate="animate"

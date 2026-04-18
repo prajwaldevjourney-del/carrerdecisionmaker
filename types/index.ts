@@ -1,5 +1,18 @@
 export type ExperienceLevel = "Beginner" | "Intermediate" | "Advanced";
 
+export interface WorkExperience {
+  title: string;
+  company: string;
+  duration: string;
+  highlights: string[];
+}
+
+export interface Project {
+  name: string;
+  description: string;
+  techStack: string[];
+}
+
 export interface ParsedResume {
   rawText: string;
   skills: string[];
@@ -12,6 +25,9 @@ export interface ParsedResume {
   education: string;
   summary: string;
   yearsOfExperience: number;
+  workExperience: WorkExperience[];
+  projects: Project[];
+  certifications: string[];
 }
 
 export interface JobRole {
@@ -41,6 +57,7 @@ export interface CareerTrajectory {
   shortTerm: string[];
   midTerm: string[];
   longTerm: string[];
+  summary?: string;
 }
 
 export interface ExchangeSkill {
