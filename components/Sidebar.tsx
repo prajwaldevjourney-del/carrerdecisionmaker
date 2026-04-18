@@ -24,7 +24,7 @@ export default function Sidebar() {
   const { theme, toggle } = useTheme();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-[var(--bg)] border-r border-[var(--border)] flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-56 sidebar-bg border-r border-[var(--border)] flex flex-col z-50">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-[var(--border)]">
         <span className="text-sm font-semibold tracking-tight text-[var(--text)]">Carreriq</span>

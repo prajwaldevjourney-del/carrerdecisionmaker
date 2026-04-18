@@ -3,7 +3,7 @@ import TopBar from "@/components/TopBar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[var(--bg-subtle)] text-[var(--text)] min-h-screen">
+    <div className="app-bg text-[var(--text)] min-h-screen">
       <Sidebar />
       <div className="ml-56 flex flex-col min-h-screen">
         <TopBar />

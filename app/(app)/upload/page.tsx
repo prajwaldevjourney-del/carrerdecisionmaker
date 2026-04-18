@@ -318,7 +318,7 @@ export default function UploadPage() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: 0.05 }}
-                className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
+                className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
               >
                 <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">Personal Information</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -351,7 +351,7 @@ export default function UploadPage() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
+                className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
               >
                 <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">Experience</p>
                 <div className="flex items-center gap-6">
@@ -382,7 +382,7 @@ export default function UploadPage() {
               <motion.div
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: 0.15 }}
-                className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
+                className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
               >
                 <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">
                   All Extracted Skills ({resume.skills.length})
@@ -407,7 +407,7 @@ export default function UploadPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: 0.2 }}
-                  className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
+                  className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5"
                 >
                   <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">Job Match Preview</p>
                   <div className="space-y-2.5">

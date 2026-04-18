@@ -28,7 +28,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="bg-[var(--bg)] text-[var(--text)] min-h-screen flex flex-col">
+    <div className="app-bg text-[var(--text)] min-h-screen flex flex-col">
       {/* Minimal nav */}
       <header className="border-b border-[var(--border)]">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">

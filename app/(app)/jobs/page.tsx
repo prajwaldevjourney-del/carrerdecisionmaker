@@ -90,7 +90,7 @@ export default function JobsPage() {
                   High:   "bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400",
                 }[job.automationRisk];
                 return (
-                  <div key={job.id} className="bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden hover:border-[var(--border-strong)] transition-colors duration-150">
+                  <div key={job.id} className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden hover:border-[var(--border-strong)] transition-colors duration-150">
                     <button onClick={() => setExpanded(isOpen ? null : job.id)}
                       className="w-full px-6 py-4 flex items-center gap-4 text-left hover:bg-[var(--bg-subtle)] transition-colors duration-150">
                       <div className="flex-1">
@@ -171,7 +171,7 @@ export default function JobsPage() {
               {liveLoading && (
                 <div className="space-y-2">
                   {[0,1,2,3].map(i => (
-                    <div key={i} className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5">
+                    <div key={i} className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5">
                       <div className="h-4 bg-[var(--bg-subtle)] rounded animate-pulse w-48 mb-2" />
                       <div className="h-3 bg-[var(--bg-subtle)] rounded animate-pulse w-32 mb-3" />
                       <div className="h-3 bg-[var(--bg-subtle)] rounded animate-pulse w-full" />
@@ -186,7 +186,7 @@ export default function JobsPage() {
                 <div className="space-y-2">
                   {liveJobs.map((job, i) => (
                     <motion.div key={i} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15, ease: "easeOut", delay: i * 0.03 }}
-                      className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 hover:border-[var(--border-strong)] transition-colors duration-150">
+                      className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 hover:border-[var(--border-strong)] transition-colors duration-150">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">

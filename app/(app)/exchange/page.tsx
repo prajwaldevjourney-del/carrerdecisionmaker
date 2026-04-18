@@ -33,7 +33,7 @@ export default function ExchangePage() {
 
         {/* Points */}
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.04 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5 flex items-center justify-between">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5 flex items-center justify-between">
           <div>
             <p className="text-xs text-[var(--text-faint)] uppercase tracking-wide mb-1">Your Points</p>
             <p className="text-3xl font-semibold text-[var(--text)]">{exchangePoints}</p>
@@ -46,7 +46,7 @@ export default function ExchangePage() {
 
         {/* Add */}
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.06 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5">
           <p className="text-xs text-[var(--text-faint)] uppercase tracking-wide mb-3">Add a Skill You Can Teach</p>
           <div className="flex gap-2">
             <input type="text" value={input} onChange={e => { setInput(e.target.value); setError(""); }}
@@ -64,7 +64,7 @@ export default function ExchangePage() {
         {/* Resume skills */}
         {resume && resume.skills.length > 0 && (
           <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.08 }}
-            className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5">
+            className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5 mb-5">
             <p className="text-xs text-[var(--text-faint)] uppercase tracking-wide mb-3">From Your Resume</p>
             <div className="flex flex-wrap gap-1.5">
               {resume.skills.map(s => {
@@ -88,7 +88,7 @@ export default function ExchangePage() {
         {/* List */}
         {exchange.length > 0 && (
           <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.1 }}
-            className="bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5">
+            className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg p-5">
             <p className="text-xs text-[var(--text-faint)] uppercase tracking-wide mb-3">Your Exchange Skills ({exchange.length})</p>
             <motion.div {...STAGGER} initial="initial" animate="animate" className="space-y-0 divide-y divide-[var(--border)]">
               <AnimatePresence>

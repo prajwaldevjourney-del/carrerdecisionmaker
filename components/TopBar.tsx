@@ -22,7 +22,7 @@ export default function TopBar() {
   const title = PAGE_TITLES[pathname] ?? "Carreriq";
 
   return (
-    <header className="h-14 bg-[var(--bg)] border-b border-[var(--border)] flex items-center justify-between px-8 shrink-0">
+    <header className="h-14 topbar-bg border-b border-[var(--border)] flex items-center justify-between px-8 shrink-0">
       <AnimatePresence mode="wait">
         <motion.h2
           key={title}

@@ -4,10 +4,8 @@
   box-sizing: border-box;
 }
 
-/* Hide native cursor — GlobalCursor component replaces it */
-html {
-  cursor: none;
-}
+/* Hide native cursor — GlobalCursor replaces it */
+html { cursor: none; }
 body, a, button, input, textarea, select, label, [role="button"] {
   cursor: none !important;
 }
@@ -20,125 +18,198 @@ body {
 /* ── Theme tokens ─────────────────────────────────────── */
 :root {
   --bg:            #ffffff;
-  --bg-subtle:     #f5f5f5;
+  --bg-subtle:     #f7f7f8;
   --bg-hover:      #ebebeb;
   --border:        #e2e2e2;
   --border-strong: #b8b8b8;
   --text:          #0a0a0a;
   --text-muted:    #6b6b6b;
   --text-faint:    #aaaaaa;
+
+  /* Gradient stops — light mode (very subtle warm-neutral) */
+  --grad-a: rgba(220, 218, 255, 0.35);
+  --grad-b: rgba(255, 240, 220, 0.25);
+  --grad-c: rgba(210, 235, 255, 0.20);
 }
 
 .dark {
   --bg:            #0c0c0c;
-  --bg-subtle:     #141414;
+  --bg-subtle:     #111113;
   --bg-hover:      #1e1e1e;
   --border:        #262626;
   --border-strong: #3a3a3a;
   --text:          #efefef;
   --text-muted:    #888888;
   --text-faint:    #444444;
+
+  /* Gradient stops — dark mode (very subtle cool-neutral) */
+  --grad-a: rgba(80, 70, 140, 0.12);
+  --grad-b: rgba(40, 60, 100, 0.10);
+  --grad-c: rgba(20, 80, 80,  0.08);
+}
+
+/* ── App background gradient ──────────────────────────── */
+/* Applied to the main app shell — sits behind all content */
+.app-bg {
+  background-color: var(--bg-subtle);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 0%,   var(--grad-a), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%,  var(--grad-b), transparent),
+    radial-gradient(ellipse 50% 60% at 50% 50%,   var(--grad-c), transparent);
+  background-attachment: fixed;
+}
+
+/* ── Page content area — glass card feel ─────────────── */
+.page-glass {
+  background: rgba(255,255,255,0.60);
+  backdrop-filter: blur(0px);
+}
+.dark .page-glass {
+  background: rgba(12,12,12,0.55);
+}
+
+/* ── Gradient card ────────────────────────────────────── */
+/* Subtle gradient sheen on hover for cards */
+.grad-card {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.grad-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.dark .grad-card::after {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.04) 0%,
+    transparent 60%
+  );
+}
+.grad-card:hover::after {
+  opacity: 1;
+}
+.grad-card:hover {
+  border-color: var(--border-strong) !important;
+  box-shadow: 0 2px 16px -4px rgba(0,0,0,0.07);
+}
+.dark .grad-card:hover {
+  box-shadow: 0 2px 16px -4px rgba(0,0,0,0.45);
+}
+
+/* ── Sidebar gradient ─────────────────────────────────── */
+.sidebar-bg {
+  background-color: var(--bg);
+  background-image: linear-gradient(
+    180deg,
+    var(--grad-a) 0%,
+    transparent 40%
+  );
+}
+
+/* ── TopBar gradient ──────────────────────────────────── */
+.topbar-bg {
+  background-color: var(--bg);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--grad-c) 100%
+  );
+}
+
+/* ── Landing hero gradient ────────────────────────────── */
+.hero-bg {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 60% at 10% 20%,  var(--grad-a), transparent),
+    radial-gradient(ellipse 50% 50% at 90% 80%,  var(--grad-b), transparent);
+}
+
+/* ── Section divider gradient ─────────────────────────── */
+.section-fade {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--bg-subtle) 100%
+  );
+}
+
+/* ── Gradient text (neutral) ──────────────────────────── */
+.gradient-text {
+  background: linear-gradient(
+    120deg,
+    var(--text) 0%,
+    var(--text-muted) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ── Custom cursor ────────────────────────────────────── */
-/* JS sets transform: translate(x - half, y - half) so element is centered */
-
 .c-dot {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
+  top: 0; left: 0;
+  width: 8px; height: 8px;
   background: var(--text);
   border-radius: 50%;
   pointer-events: none !important;
   z-index: 999999;
   opacity: 0;
   will-change: transform;
-  transition: opacity 0.12s ease,
-              width 0.15s ease,
-              height 0.15s ease,
-              background 0.15s ease;
+  transition: opacity 0.12s ease, width 0.15s ease, height 0.15s ease, background 0.15s ease;
 }
-
-.c-dot.c-hover {
-  width: 12px;
-  height: 12px;
-  background: var(--text-muted);
-}
-
-.c-dot.c-text {
-  width: 2px;
-  height: 18px;
-  border-radius: 1px;
-  background: var(--text-muted);
-}
+.c-dot.c-hover  { width: 12px; height: 12px; background: var(--text-muted); }
+.c-dot.c-text   { width: 2px; height: 18px; border-radius: 1px; background: var(--text-muted); }
 
 .c-ring {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 36px;
-  height: 36px;
+  top: 0; left: 0;
+  width: 36px; height: 36px;
   border: 1px solid var(--border-strong);
   border-radius: 50%;
   pointer-events: none !important;
   z-index: 999998;
   opacity: 0;
   will-change: transform;
-  transition: opacity 0.12s ease,
-              width 0.18s ease,
-              height 0.18s ease,
-              border-color 0.18s ease,
-              background 0.18s ease;
+  transition: opacity 0.12s ease, width 0.18s ease, height 0.18s ease,
+              border-color 0.18s ease, background 0.18s ease;
 }
-
-.c-ring.c-hover {
-  width: 52px;
-  height: 52px;
-  border-color: var(--text-muted);
-  background: rgba(128,128,128,0.04);
-}
-
-.c-ring.c-text {
-  width: 28px;
-  height: 28px;
-  border-color: var(--text-faint);
-}
+.c-ring.c-hover { width: 52px; height: 52px; border-color: var(--text-muted); background: rgba(128,128,128,0.04); }
+.c-ring.c-text  { width: 28px; height: 28px; border-color: var(--text-faint); }
 
 /* ── Animated border ──────────────────────────────────── */
 @keyframes border-rotate {
-  0%   { background-position: 0% 50%;   }
+  0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%;   }
+  100% { background-position: 0% 50%; }
 }
-
-.animated-border {
-  position: relative;
-  isolation: isolate;
-}
+.animated-border { position: relative; isolation: isolate; }
 .animated-border::before {
   content: "";
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    var(--border-strong) 0%,
-    var(--text-faint) 50%,
-    var(--border-strong) 100%
-  );
+  background: linear-gradient(135deg, var(--border-strong) 0%, var(--text-faint) 50%, var(--border-strong) 100%);
   background-size: 300% 300%;
   animation: border-rotate 3s ease infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: 0; /* never above content */
+  z-index: 0;
 }
 
-/* ── Mesh background ──────────────────────────────────── */
+/* ── Mesh background (landing hero) ──────────────────── */
 .mesh-bg {
   position: absolute;
   inset: 0;
@@ -146,39 +217,30 @@ body {
   pointer-events: none;
   z-index: 0;
 }
-
 .mesh-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(90px);
   will-change: transform;
 }
-
 .mesh-orb-1 {
   width: 520px; height: 520px;
-  background: radial-gradient(circle, rgba(150,150,150,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(150,150,150,0.15) 0%, transparent 70%);
   top: -140px; left: -100px;
 }
 .mesh-orb-2 {
   width: 380px; height: 380px;
-  background: radial-gradient(circle, rgba(120,120,120,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(120,120,120,0.10) 0%, transparent 70%);
   top: 60px; right: -80px;
 }
 .mesh-orb-3 {
   width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(100,100,100,0.09) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(100,100,100,0.08) 0%, transparent 70%);
   bottom: -60px; left: 40%;
 }
-
-.dark .mesh-orb-1 {
-  background: radial-gradient(circle, rgba(255,255,255,0.065) 0%, transparent 70%);
-}
-.dark .mesh-orb-2 {
-  background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-}
-.dark .mesh-orb-3 {
-  background: radial-gradient(circle, rgba(255,255,255,0.025) 0%, transparent 70%);
-}
+.dark .mesh-orb-1 { background: radial-gradient(circle, rgba(255,255,255,0.055) 0%, transparent 70%); }
+.dark .mesh-orb-2 { background: radial-gradient(circle, rgba(255,255,255,0.035) 0%, transparent 70%); }
+.dark .mesh-orb-3 { background: radial-gradient(circle, rgba(255,255,255,0.022) 0%, transparent 70%); }
 
 /* ── Scroll reveal ────────────────────────────────────── */
 .reveal {
@@ -186,10 +248,7 @@ body {
   transform: translateY(12px);
   transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+.reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Typewriter cursor ────────────────────────────────── */
 @keyframes blink {
@@ -198,8 +257,7 @@ body {
 }
 .tw-cursor {
   display: inline-block;
-  width: 2px;
-  height: 0.82em;
+  width: 2px; height: 0.82em;
   background: var(--text-muted);
   margin-left: 2px;
   vertical-align: text-bottom;
@@ -224,32 +282,22 @@ body {
 .navbar-blur {
   backdrop-filter: blur(16px) saturate(1.3);
   -webkit-backdrop-filter: blur(16px) saturate(1.3);
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.82);
 }
-.dark .navbar-blur {
-  background: rgba(12,12,12,0.85);
-}
-
-/* ── Badge (static, no float) ────────────────────────── */
-/* badge-float removed — floating elements are forbidden */
+.dark .navbar-blur { background: rgba(12,12,12,0.82); }
 
 /* ── Step connector ───────────────────────────────────── */
-.step-line {
-  width: 1px;
-  background: var(--border);
-  transition: height 0.2s ease-out;
-}
+.step-line { width: 1px; background: var(--border); transition: height 0.2s ease-out; }
 
-/* ── Button press feedback ────────────────────────────── */
+/* ── Button press ─────────────────────────────────────── */
 button:not(:disabled):active {
   opacity: 0.85;
   transform: scale(0.985);
   transition: transform 0.08s ease, opacity 0.08s ease;
 }
 
-/* ── Focus ring ───────────────────────────────────────── */
-input:focus,
-textarea:focus {
+/* ── Focus ────────────────────────────────────────────── */
+input:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(128,128,128,0.1);
 }
 
@@ -261,3 +309,38 @@ textarea:focus {
 
 /* ── Selection ────────────────────────────────────────── */
 ::selection { background: rgba(128,128,128,0.18); color: var(--text); }
+
+/* ── KPI card gradient accent ─────────────────────────── */
+.kpi-card {
+  background: var(--bg);
+  background-image: linear-gradient(
+    135deg,
+    var(--grad-a) 0%,
+    transparent 50%
+  );
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.kpi-card:hover {
+  border-color: var(--border-strong) !important;
+  box-shadow: 0 2px 16px -4px rgba(0,0,0,0.07);
+}
+.dark .kpi-card:hover {
+  box-shadow: 0 2px 16px -4px rgba(0,0,0,0.45);
+}
+
+/* ── Shimmer loading skeleton ─────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 25%,
+    var(--bg-hover)  50%,
+    var(--bg-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}

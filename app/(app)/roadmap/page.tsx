@@ -55,7 +55,7 @@ export default function RoadmapPage() {
       {/* Summary bar */}
       {roadmap.length > 0 && (
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.04 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 mb-6">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 mb-6">
           <div className="flex items-center gap-6 mb-3">
             {(["High", "Medium", "Low"] as const).map(p => {
               const count = roadmap.filter(r => r.priority === p).length;
@@ -88,7 +88,7 @@ export default function RoadmapPage() {
 
       {roadmap.length === 0 ? (
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.04 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-10 text-center">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-10 text-center">
           <CheckCircle size={24} className="mx-auto text-emerald-500 mb-3" />
           <p className="text-sm font-medium text-[var(--text)] mb-1">All skills covered</p>
           <p className="text-xs text-[var(--text-muted)]">You have all the skills needed for your top roles.</p>
@@ -103,7 +103,7 @@ export default function RoadmapPage() {
                   const cfg = priorityConfig[item.priority];
                   return (
                     <motion.div key={item.skill} {...STAGGER_ITEM}
-                      className="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-5 py-4 flex items-start gap-4 hover:border-[var(--border-strong)] transition-colors duration-150">
+                      className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl px-5 py-4 flex items-start gap-4 hover:border-[var(--border-strong)] transition-colors duration-150">
                       <div className="flex items-center gap-2.5 pt-0.5 shrink-0">
                         <span className="text-xs text-[var(--text-faint)] font-mono w-5">{String(i + 1).padStart(2, "0")}</span>
                         <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />

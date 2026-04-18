@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
           {/* Upload CTA */}
           <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.05 }}
-            className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-8 mb-8 flex items-center justify-between">
+            className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-8 mb-8 flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-[var(--text)] mb-1">Start with your resume</p>
               <p className="text-xs text-[var(--text-muted)]">PDF · Takes under 30 seconds to analyze</p>
@@ -53,7 +53,7 @@ export default function DashboardPage() {
             {FEATURES.map(({ href, icon: Icon, label, desc }) => (
               <motion.div key={href} {...STAGGER_ITEM}>
                 <Link href={href}
-                  className="flex items-start gap-4 p-5 bg-[var(--bg)] border border-[var(--border)] rounded-xl hover:border-[var(--border-strong)] transition-colors duration-150 group">
+                  className="grad-card flex items-start gap-4 p-5 bg-[var(--bg)] border border-[var(--border)] rounded-xl group">
                   <div className="w-8 h-8 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border)] flex items-center justify-center shrink-0">
                     <Icon size={14} className="text-[var(--text-muted)]" />
                   </div>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
             },
           ].map(({ label, value, sub }) => (
             <motion.div key={label} {...STAGGER_ITEM}
-              className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 hover:border-[var(--border-strong)] transition-colors duration-150">
+              className="kpi-card border border-[var(--border)] rounded-xl p-5">
               <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-3">{label}</p>
               <div className="mb-1.5">{value}</div>
               <p className="text-xs text-[var(--text-faint)] truncate">{sub}</p>
@@ -134,7 +134,7 @@ export default function DashboardPage() {
           {/* Top role card — 2 cols */}
           {topJob && (
             <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.06 }}
-              className="col-span-2 bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6">
+              className="grad-card col-span-2 bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6">
               <div className="flex items-start justify-between mb-5">
                 <div>
                   <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-1.5">Best Matched Role</p>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
 
           {/* Roadmap summary — 1 col */}
           <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.08 }}
-            className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6 flex flex-col">
+            className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6 flex flex-col">
             <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-4">Learning Roadmap</p>
             <div className="flex-1 space-y-2 mb-4">
               {roadmap.slice(0, 5).map((item, i) => (
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
         {/* All roles bar chart */}
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.1 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6 mb-4">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-6 mb-4">
           <div className="flex items-center justify-between mb-5">
             <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest">All Role Matches</p>
             <Link href="/jobs" className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-150">View details →</Link>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
           ].map(({ href, icon: Icon, label, desc }) => (
             <motion.div key={href} {...STAGGER_ITEM}>
               <Link href={href}
-                className="flex items-center gap-3 p-4 bg-[var(--bg)] border border-[var(--border)] rounded-xl hover:border-[var(--border-strong)] transition-colors duration-150 group">
+                className="grad-card flex items-center gap-3 p-4 bg-[var(--bg)] border border-[var(--border)] rounded-xl group">
                 <div className="w-7 h-7 rounded-lg bg-[var(--bg-subtle)] border border-[var(--border)] flex items-center justify-center shrink-0">
                   <Icon size={13} className="text-[var(--text-muted)]" />
                 </div>

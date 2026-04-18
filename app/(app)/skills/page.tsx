@@ -42,7 +42,7 @@ export default function SkillsPage() {
 
       {/* Your skills */}
       <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.04 }}
-        className="bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 mb-5">
+        className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-5 mb-5">
         <p className="text-xs text-[var(--text-faint)] uppercase tracking-widest mb-3">
           Your Skills <span className="text-[var(--text-muted)] normal-case tracking-normal">({resume.skills.length})</span>
         </p>
@@ -60,7 +60,7 @@ export default function SkillsPage() {
           const pct = job.matchPercent;
           return (
             <motion.div key={job.id} {...STAGGER_ITEM}
-              className="bg-[var(--bg)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--border-strong)] transition-colors duration-150">
+              className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--border-strong)] transition-colors duration-150">
               <button onClick={() => setExpanded(isOpen ? null : job.id)}
                 className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-[var(--bg-subtle)] transition-colors duration-150">
                 {/* Match ring */}

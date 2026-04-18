@@ -42,7 +42,7 @@ function ValueCard({ num, title, desc, delay }: typeof VALUES[0] & { delay: numb
   return (
     <div
       ref={ref}
-      className="reveal card-interactive bg-[var(--bg)] border border-[var(--border)] rounded-xl p-7 group"
+      className="reveal card-interactive grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl p-7 group"
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="w-6 h-px bg-[var(--border-strong)] mb-6 transition-all duration-150 ease-out group-hover:w-10 group-hover:bg-[var(--text-muted)]" />

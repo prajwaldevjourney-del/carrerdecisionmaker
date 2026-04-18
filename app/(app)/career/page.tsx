@@ -127,7 +127,7 @@ export default function CareerPage() {
 
         {/* Trajectory */}
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.04 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles size={14} className="text-[var(--text-faint)]" />
@@ -181,7 +181,7 @@ export default function CareerPage() {
 
         {/* Intelligence Panel */}
         <motion.div {...FADE_UP} transition={{ duration: 0.18, ease: "easeOut", delay: 0.08 }}
-          className="bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden">
+          className="grad-card bg-[var(--bg)] border border-[var(--border)] rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text)]">Career Intelligence</span>
             <span className="text-xs text-[var(--text-faint)] bg-[var(--bg-subtle)] border border-[var(--border)] px-2.5 py-1 rounded-full">Gemini 1.5 Flash</span>

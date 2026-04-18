@@ -63,7 +63,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={heroRef} className="relative overflow-hidden min-h-[90vh] flex items-center">
+    <section ref={heroRef} className="hero-bg relative overflow-hidden min-h-[90vh] flex items-center">
       {/* Mesh background — no CSS animation, JS handles it */}
       <div className="mesh-bg">
         <div className="mesh-orb mesh-orb-1" />
