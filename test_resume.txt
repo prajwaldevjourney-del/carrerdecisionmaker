@@ -1,0 +1,33 @@
+﻿John Smith
+john.smith@gmail.com | +1-415-555-0123 | San Francisco, CA
+linkedin.com/in/johnsmith | github.com/johnsmith
+
+SUMMARY
+Full Stack Developer with 4 years of experience building scalable web applications using React, Node.js, and AWS.
+
+EXPERIENCE
+Senior Software Engineer - Stripe, San Francisco (2022 - Present)
+- Built React and TypeScript frontend for payment dashboard serving 2M users
+- Designed Node.js microservices with PostgreSQL and Redis caching
+- Deployed infrastructure on AWS using Docker and Kubernetes
+- Implemented CI/CD pipelines with GitHub Actions
+
+Software Engineer - Airbnb, San Francisco (2020 - 2022)
+- Developed React components for booking flow
+- Built REST APIs with Node.js and Express
+- Worked with MongoDB and PostgreSQL databases
+
+SKILLS
+Languages: JavaScript, TypeScript, Python, SQL
+Frontend: React, Next.js, HTML, CSS, Tailwind CSS, Redux
+Backend: Node.js, Express, REST API, GraphQL
+Databases: PostgreSQL, MongoDB, Redis
+DevOps: Docker, Kubernetes, AWS, GitHub Actions, CI/CD
+Tools: Git, Jira, Figma
+
+EDUCATION
+B.S. Computer Science - UC Berkeley, 2020
+
+PROJECTS
+E-commerce Platform - Built with React, Node.js, PostgreSQL, Docker
+Real-time Chat App - WebSockets, Redis, React

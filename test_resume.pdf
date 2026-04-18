@@ -1,0 +1,58 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2050 >>
+stream
+BT /F1 10 Tf 50 750 Td (?John Smith) Tj ET
+BT /F1 10 Tf 50 736 Td (john.smith@gmail.com | +1-415-555-0123 | San Francisco, CA) Tj ET
+BT /F1 10 Tf 50 722 Td (linkedin.com/in/johnsmith | github.com/johnsmith) Tj ET
+BT /F1 10 Tf 50 708 Td (SUMMARY) Tj ET
+BT /F1 10 Tf 50 694 Td (Full Stack Developer with 4 years of experience building scalable web applications using React, Node.js, and AWS.) Tj ET
+BT /F1 10 Tf 50 680 Td (EXPERIENCE) Tj ET
+BT /F1 10 Tf 50 666 Td (Senior Software Engineer - Stripe, San Francisco [2022 - Present[) Tj ET
+BT /F1 10 Tf 50 652 Td (- Built React and TypeScript frontend for payment dashboard serving 2M users) Tj ET
+BT /F1 10 Tf 50 638 Td (- Designed Node.js microservices with PostgreSQL and Redis caching) Tj ET
+BT /F1 10 Tf 50 624 Td (- Deployed infrastructure on AWS using Docker and Kubernetes) Tj ET
+BT /F1 10 Tf 50 610 Td (- Implemented CI/CD pipelines with GitHub Actions) Tj ET
+BT /F1 10 Tf 50 596 Td (Software Engineer - Airbnb, San Francisco [2020 - 2022[) Tj ET
+BT /F1 10 Tf 50 582 Td (- Developed React components for booking flow) Tj ET
+BT /F1 10 Tf 50 568 Td (- Built REST APIs with Node.js and Express) Tj ET
+BT /F1 10 Tf 50 554 Td (- Worked with MongoDB and PostgreSQL databases) Tj ET
+BT /F1 10 Tf 50 540 Td (SKILLS) Tj ET
+BT /F1 10 Tf 50 526 Td (Languages: JavaScript, TypeScript, Python, SQL) Tj ET
+BT /F1 10 Tf 50 512 Td (Frontend: React, Next.js, HTML, CSS, Tailwind CSS, Redux) Tj ET
+BT /F1 10 Tf 50 498 Td (Backend: Node.js, Express, REST API, GraphQL) Tj ET
+BT /F1 10 Tf 50 484 Td (Databases: PostgreSQL, MongoDB, Redis) Tj ET
+BT /F1 10 Tf 50 470 Td (DevOps: Docker, Kubernetes, AWS, GitHub Actions, CI/CD) Tj ET
+BT /F1 10 Tf 50 456 Td (Tools: Git, Jira, Figma) Tj ET
+BT /F1 10 Tf 50 442 Td (EDUCATION) Tj ET
+BT /F1 10 Tf 50 428 Td (B.S. Computer Science - UC Berkeley, 2020) Tj ET
+BT /F1 10 Tf 50 414 Td (PROJECTS) Tj ET
+BT /F1 10 Tf 50 400 Td (E-commerce Platform - Built with React, Node.js, PostgreSQL, Docker) Tj ET
+BT /F1 10 Tf 50 386 Td (Real-time Chat App - WebSockets, Redis, React) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002343 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2413
+%%EOF

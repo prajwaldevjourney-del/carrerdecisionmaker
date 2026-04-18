@@ -10,129 +10,50 @@ import { extractSkillsFromText, detectExperienceLevel, extractName, extractEmail
 const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
 
 function buildPrompt(rawText: string): string {
-  return `You are an expert resume parser. Extract EVERYTHING from this resume accurately.
+  // Limit text to avoid slow responses — 6000 chars is enough for any resume
+  const text = rawText.slice(0, 6000);
+  return `You are a resume parser. Extract data from this resume and return JSON only.
 
-IMPORTANT: Return ONLY a valid JSON object. No markdown. No explanation. Just JSON.
+No markdown. No explanation. Return ONLY this JSON structure:
 
 {
-  "name": "exact full name",
-  "email": "email address or empty string",
-  "phone": "phone number or empty string",
-  "location": "city, state/country or empty string",
-  "currentRole": "most recent job title or empty string",
-  "yearsOfExperience": <number — total years of work experience>,
-  "experienceLevel": "<Beginner|Intermediate|Advanced>",
-  "education": "degree, field, institution or empty string",
-  "summary": "2-sentence professional summary based on this resume",
-  "skills": ["list every technical skill, tool, language, framework, platform, methodology mentioned anywhere in the resume — normalized to lowercase"],
-  "workExperience": [
-    {
-      "title": "job title",
-      "company": "company name",
-      "duration": "start – end dates",
-      "highlights": ["key responsibility or achievement"]
-    }
-  ],
-  "projects": [
-    {
-      "name": "project name",
-      "description": "brief description",
-      "techStack": ["tech used"]
-    }
-  ],
-  "certifications": ["certification name"],
+  "name": "full name",
+  "email": "email or empty",
+  "phone": "phone or empty",
+  "location": "city/country or empty",
+  "currentRole": "most recent job title or empty",
+  "yearsOfExperience": 0,
+  "experienceLevel": "Beginner",
+  "education": "degree, field, institution or empty",
+  "summary": "2-sentence summary",
+  "skills": ["skill1","skill2"],
+  "workExperience": [{"title":"","company":"","duration":"","highlights":[""]}],
+  "projects": [{"name":"","description":"","techStack":[""]}],
+  "certifications": [],
   "jobMatches": [
-    {
-      "id": "frontend-dev",
-      "title": "Frontend Developer",
-      "requiredSkills": ["react","typescript","javascript","html","css","tailwind","redux","jest","webpack","accessibility"],
-      "matchedSkills": ["<skills from requiredSkills that candidate HAS>"],
-      "missingSkills": ["<skills from requiredSkills that candidate LACKS>"],
-      "matchPercent": <integer 0-100>,
-      "automationRisk": "Medium"
-    },
-    {
-      "id": "backend-dev",
-      "title": "Backend Developer",
-      "requiredSkills": ["nodejs","python","rest api","postgresql","redis","docker","microservices","testing","git","system design"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "Medium"
-    },
-    {
-      "id": "fullstack-dev",
-      "title": "Full Stack Developer",
-      "requiredSkills": ["react","nodejs","typescript","postgresql","docker","rest api","git","css","redis","testing"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "Medium"
-    },
-    {
-      "id": "ml-engineer",
-      "title": "ML Engineer",
-      "requiredSkills": ["python","tensorflow","pytorch","scikit-learn","pandas","numpy","mlflow","sql","docker","statistics"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "Low"
-    },
-    {
-      "id": "devops-engineer",
-      "title": "DevOps Engineer",
-      "requiredSkills": ["docker","kubernetes","aws","terraform","ci/cd","linux","bash","nginx","prometheus","helm"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "Low"
-    },
-    {
-      "id": "data-analyst",
-      "title": "Data Analyst",
-      "requiredSkills": ["sql","python","pandas","data visualization","statistics","excel","tableau","matplotlib","seaborn","reporting"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "High"
-    },
-    {
-      "id": "cloud-engineer",
-      "title": "Cloud Engineer",
-      "requiredSkills": ["aws","azure","gcp","terraform","kubernetes","docker","ci/cd","linux","cloudformation","networking"],
-      "matchedSkills": ["<candidate's matching skills>"],
-      "missingSkills": ["<candidate's missing skills>"],
-      "matchPercent": <integer>,
-      "automationRisk": "Low"
-    }
+    {"id":"frontend-dev","title":"Frontend Developer","requiredSkills":["react","typescript","javascript","html","css","tailwind","redux","jest","webpack","accessibility"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Medium"},
+    {"id":"backend-dev","title":"Backend Developer","requiredSkills":["nodejs","python","rest api","postgresql","redis","docker","microservices","testing","git","system design"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Medium"},
+    {"id":"fullstack-dev","title":"Full Stack Developer","requiredSkills":["react","nodejs","typescript","postgresql","docker","rest api","git","css","redis","testing"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Medium"},
+    {"id":"ml-engineer","title":"ML Engineer","requiredSkills":["python","tensorflow","pytorch","scikit-learn","pandas","numpy","mlflow","sql","docker","statistics"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Low"},
+    {"id":"devops-engineer","title":"DevOps Engineer","requiredSkills":["docker","kubernetes","aws","terraform","ci/cd","linux","bash","nginx","prometheus","helm"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Low"},
+    {"id":"data-analyst","title":"Data Analyst","requiredSkills":["sql","python","pandas","data visualization","statistics","excel","tableau","matplotlib","seaborn","reporting"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"High"},
+    {"id":"cloud-engineer","title":"Cloud Engineer","requiredSkills":["aws","azure","gcp","terraform","kubernetes","docker","ci/cd","linux","cloudformation","networking"],"matchedSkills":[],"missingSkills":[],"matchPercent":0,"automationRisk":"Low"}
   ],
-  "roadmap": [
-    {
-      "skill": "skill name",
-      "priority": "<High|Medium|Low>",
-      "timeline": "X weeks",
-      "reason": "why this skill matters for this specific candidate"
-    }
-  ],
-  "career": {
-    "shortTerm": ["specific role or action", "specific role or action", "specific role or action"],
-    "midTerm": ["specific role or action", "specific role or action", "specific role or action"],
-    "longTerm": ["specific role or action", "specific role or action", "specific role or action"],
-    "summary": "one sentence about this person's career direction"
-  }
+  "roadmap": [{"skill":"","priority":"High","timeline":"2 weeks","reason":""}],
+  "career": {"shortTerm":["","",""],"midTerm":["","",""],"longTerm":["","",""],"summary":""}
 }
 
-CALCULATION RULES:
-- matchPercent = round(matchedSkills.length / requiredSkills.length * 100)
-- matchedSkills = intersection of candidate's skills with requiredSkills (check carefully)
-- missingSkills = requiredSkills NOT in candidate's skills
-- yearsOfExperience = sum of all work experience durations as integer
-- experienceLevel: Beginner=0-2yrs or student/intern, Intermediate=2-5yrs, Advanced=5+yrs or senior/lead/architect
-- roadmap: top 8 skills the candidate is missing, ordered by career impact
-- career: specific to this person's actual background, not generic
+Rules:
+- skills: every technical skill, tool, language, framework mentioned
+- matchedSkills: candidate's skills that appear in requiredSkills
+- missingSkills: requiredSkills NOT in candidate's skills  
+- matchPercent: round(matchedSkills.length / requiredSkills.length * 100)
+- roadmap: 6-8 most impactful missing skills with specific reasons
+- career: realistic roles based on actual skills, 3 items each array
+- experienceLevel: Beginner=0-2yrs, Intermediate=2-5yrs, Advanced=5+yrs
 
-RESUME TEXT (extract everything accurately):
-${rawText}`;
+RESUME:
+${text}`;
 }
 
 async function callGemini(rawText: string, apiKey: string): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
