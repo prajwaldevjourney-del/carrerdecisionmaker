@@ -10,7 +10,7 @@ import { extractSkillsFromText, detectExperienceLevel, extractName, extractEmail
 async function geminiDeepExtract(rawText: string, apiKey: string) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: { temperature: 0, maxOutputTokens: 4096 },
   });
 
@@ -79,7 +79,7 @@ ${rawText.slice(0, 12000)}`;
 async function geminiComputeMatches(extracted: any, apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: { temperature: 0, maxOutputTokens: 4096 },
   });
 
@@ -176,7 +176,7 @@ IMPORTANT: Only include a skill in matchedSkills if the candidate ACTUALLY HAS i
 async function geminiGenerateRoadmap(extracted: any, jobs: any[], apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: { temperature: 0, maxOutputTokens: 3000 },
   });
 
@@ -224,7 +224,7 @@ Rules:
 async function geminiGenerateTrajectory(extracted: any, jobs: any[], apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: { temperature: 0.2, maxOutputTokens: 1500 },
   });
 

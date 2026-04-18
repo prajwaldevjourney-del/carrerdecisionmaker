@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     // Google Search grounding — NO thinkingConfig (they conflict)
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       systemInstruction: SYSTEM_PROMPT,
       // @ts-expect-error googleSearch not yet typed in SDK
       tools: [{ googleSearch: {} }],

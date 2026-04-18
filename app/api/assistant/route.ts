@@ -101,10 +101,10 @@ export async function POST(req: NextRequest) {
       console.warn("gemini-2.0-flash grounding failed:", (e1 as Error).message);
     }
 
-    // Try gemini-1.5-flash with grounding
+    // Try gemini-2.0-flash with grounding
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction: SYSTEM_PROMPT,
         // @ts-expect-error googleSearch tool not yet typed in SDK
         tools: [{ googleSearch: {} }],
@@ -116,13 +116,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ answer });
       }
     } catch (e2) {
-      console.warn("gemini-1.5-flash grounding failed:", (e2 as Error).message);
+      console.warn("gemini-2.0-flash grounding failed:", (e2 as Error).message);
     }
 
-    // Try gemini-1.5-flash without grounding
+    // Try gemini-2.0-flash without grounding
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction: SYSTEM_PROMPT,
         generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
       });
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ answer });
       }
     } catch (e3) {
-      console.warn("gemini-1.5-flash no-grounding failed:", (e3 as Error).message);
+      console.warn("gemini-2.0-flash no-grounding failed:", (e3 as Error).message);
     }
 
     // Final fallback

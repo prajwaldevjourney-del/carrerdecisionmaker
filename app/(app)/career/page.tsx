@@ -149,7 +149,7 @@ export default function CareerPage() {
             <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
               <span className="text-sm font-medium text-[var(--text)]">Career Intelligence</span>
               <span className="text-xs text-[var(--text-faint)] bg-[var(--bg-subtle)] border border-[var(--border)] px-2.5 py-1 rounded-full">
-                Gemini · Web Search
+                Gemini 2.0 Flash · Web Search
               </span>
             </div>
             <div className="p-6">
