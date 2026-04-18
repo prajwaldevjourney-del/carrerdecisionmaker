@@ -42,12 +42,20 @@ export default function UploadPage() {
     if (!file) return;
     setStatus("parsing"); setErrorMsg(""); setStep(0); setResult(null);
 
-    // Animate steps while waiting for API
+    // Animate through steps, then hold on last step until API returns
     let cur = 0;
-    const timings = [500, 700, 900, 700, 800, 700, 600];
+    const timings = [800, 1000, 1200, 1000, 1100, 1000, 800];
+    let stopped = false;
     const advance = () => {
+      if (stopped) return;
       cur++;
-      if (cur < PARSE_STEPS.length) { setStep(cur); setTimeout(advance, timings[cur] ?? 700); }
+      if (cur < PARSE_STEPS.length - 1) {
+        setStep(cur);
+        setTimeout(advance, timings[cur] ?? 900);
+      } else {
+        // Hold on last step — keep spinning until API returns
+        setStep(PARSE_STEPS.length - 2);
+      }
     };
     setTimeout(advance, timings[0]);
 
@@ -56,20 +64,21 @@ export default function UploadPage() {
 
     try {
       const res  = await fetch("/api/parse-resume", { method: "POST", body: fd });
+      stopped = true;
       const data = await res.json();
-      setStep(PARSE_STEPS.length - 1);
+      setStep(PARSE_STEPS.length - 1); // all done
 
       if (!res.ok) { setErrorMsg(data.error || "Failed to parse resume."); setStatus("error"); return; }
 
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 400));
 
       setState({ ...state, resume: data.resume, jobs: data.jobs, roadmap: data.roadmap, career: data.career });
       setResult({ resume: data.resume, jobs: data.jobs });
       setStatus("done");
 
-      // Auto-redirect after showing results
-      setTimeout(() => router.push("/dashboard"), 4000);
+      setTimeout(() => router.push("/dashboard"), 5000);
     } catch {
+      stopped = true;
       setErrorMsg("Network error. Please try again."); setStatus("error");
     }
   };
@@ -80,7 +89,7 @@ export default function UploadPage() {
         <motion.div {...FADE_UP} className="mb-8">
           <h1 className="text-2xl font-semibold text-[var(--text)] mb-1">Upload Resume</h1>
           <p className="text-sm text-[var(--text-muted)]">
-            Gemini AI reads every line of your resume and populates all sections automatically.
+            Gemini AI reads every line of your resume and populates all sections automatically. Analysis takes 20–30 seconds.
           </p>
         </motion.div>
 
@@ -151,8 +160,8 @@ export default function UploadPage() {
                 className="mt-4 grad-card bg-[var(--bg)] border border-[var(--border)] rounded-xl overflow-hidden">
                 <div className="px-5 pt-5 pb-4">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs font-medium text-[var(--text)]">Gemini is analyzing your resume</p>
-                    <span className="text-xs text-[var(--text-faint)]">{step + 1} / {PARSE_STEPS.length}</span>
+                    <p className="text-xs font-medium text-[var(--text)]">Gemini AI is analyzing your resume</p>
+                    <span className="text-xs text-[var(--text-faint)]">{Math.min(step + 1, PARSE_STEPS.length)} / {PARSE_STEPS.length}</span>
                   </div>
                   <div className="h-1 bg-[var(--bg-subtle)] rounded-full overflow-hidden mb-5">
                     <motion.div className="h-full bg-[var(--text)] rounded-full"
