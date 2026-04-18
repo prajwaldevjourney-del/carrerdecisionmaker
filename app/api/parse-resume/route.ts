@@ -54,26 +54,32 @@ async function callGemini(rawText: string, apiKey: string): Promise<any> { // es
   const genAI = new GoogleGenerativeAI(apiKey);
   const prompt = PROMPT_TEMPLATE(rawText);
 
+  console.log(`\n=== GEMINI CALL START ===`);
+  console.log(`Raw text length: ${rawText.length} chars`);
+  console.log(`Raw text preview: ${rawText.slice(0, 200).replace(/\n/g, " ")}`);
+
   for (const modelName of MODELS) {
     try {
-      console.log(`Trying ${modelName}...`);
+      console.log(`\nTrying model: ${modelName}`);
       const model = genAI.getGenerativeModel({
         model: modelName,
         generationConfig: { temperature: 0, maxOutputTokens: 8192 },
       });
       const result = await model.generateContent(prompt);
       let text = result.response.text().trim();
+      console.log(`Response length: ${text.length} chars`);
+      console.log(`Response preview: ${text.slice(0, 300)}`);
       // Strip any markdown fences
       text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
       const start = text.indexOf("{");
       const end   = text.lastIndexOf("}");
       if (start === -1 || end === -1) throw new Error("No JSON object in response");
       const parsed = JSON.parse(text.slice(start, end + 1));
-      console.log(`✓ ${modelName} succeeded: ${parsed.name}, ${parsed.skills?.length} skills`);
+      console.log(`✓ ${modelName} SUCCESS: name="${parsed.name}", skills=${parsed.skills?.length}, jobMatches=${parsed.jobMatches?.length}`);
       return parsed;
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       const msg = err?.message ?? String(err);
-      console.warn(`✗ ${modelName} failed: ${msg.slice(0, 120)}`);
+      console.error(`✗ ${modelName} FAILED: ${msg.slice(0, 200)}`);
       // On rate limit, wait before trying next model
       if (msg.includes("429") || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED")) {
         console.log("Rate limited — waiting 2s before next model...");
@@ -81,6 +87,7 @@ async function callGemini(rawText: string, apiKey: string): Promise<any> { // es
       }
     }
   }
+  console.log("=== ALL MODELS FAILED — using local fallback ===");
   return null; // All models failed — use local fallback
 }
 
