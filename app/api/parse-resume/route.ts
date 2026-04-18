@@ -6,264 +6,137 @@ import { generateRoadmap } from "@/lib/roadmapGenerator";
 import { generateCareerTrajectory } from "@/lib/careerEngine";
 import { extractSkillsFromText, detectExperienceLevel, extractName, extractEmail } from "@/lib/skillDatabase";
 
-// ─── Gemini: extract EVERYTHING from the resume ───────────────────────────────
-async function geminiDeepExtract(rawText: string, apiKey: string) {
+// ONE single Gemini call — extracts everything at once to avoid quota exhaustion
+async function geminiFullAnalysis(rawText: string, apiKey: string) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0, maxOutputTokens: 4096 },
+    generationConfig: { temperature: 0, maxOutputTokens: 8192 },
   });
 
-  const prompt = `You are an expert resume parser. Read this resume CAREFULLY and extract EVERY piece of information.
+  const prompt = `You are an expert resume parser and career analyst. Read this resume carefully and return ONE JSON object with ALL of the following.
 
-Return ONLY valid JSON — no markdown fences, no explanation, just the JSON object:
+Return ONLY valid JSON — no markdown, no explanation:
 
 {
-  "name": "exact full name from resume",
-  "email": "email address or empty string",
-  "phone": "phone number or empty string",
-  "location": "city, state/country or empty string",
-  "currentRole": "most recent job title exactly as written",
-  "yearsOfExperience": <integer — calculate from work history dates>,
+  "name": "full name from resume",
+  "email": "email or empty string",
+  "phone": "phone or empty string",
+  "location": "city/country or empty string",
+  "currentRole": "most recent job title or empty string",
+  "yearsOfExperience": <integer>,
   "experienceLevel": "Beginner" or "Intermediate" or "Advanced",
-  "education": "degree, field, university — most recent",
-  "summary": "2-sentence summary of this person based on their actual resume",
-  "skills": [
-    "every single technical skill, tool, language, framework, platform mentioned anywhere in the resume",
-    "normalize: React.js → react, Node.js → nodejs, etc.",
-    "include ALL: programming languages, frameworks, libraries, databases, cloud, devops, testing, methodologies"
-  ],
+  "education": "degree, field, university or empty string",
+  "summary": "2-sentence professional summary based on actual resume content",
+  "skills": ["every technical skill, tool, language, framework, platform mentioned — normalized lowercase"],
   "workExperience": [
-    {
-      "title": "job title",
-      "company": "company name",
-      "duration": "e.g. Jan 2022 – Present",
-      "highlights": ["key achievement or responsibility 1", "key achievement 2"]
-    }
+    { "title": "job title", "company": "company", "duration": "dates", "highlights": ["achievement 1", "achievement 2"] }
   ],
   "projects": [
+    { "name": "project name", "description": "what it does", "techStack": ["tech1"] }
+  ],
+  "certifications": ["cert1"],
+  "jobMatches": [
     {
-      "name": "project name",
-      "description": "what it does",
-      "techStack": ["tech1", "tech2"]
+      "id": "frontend-dev",
+      "title": "Frontend Developer",
+      "requiredSkills": ["react","typescript","javascript","html","css","tailwind","redux","jest","webpack","accessibility"],
+      "matchedSkills": ["<only skills candidate ACTUALLY HAS>"],
+      "missingSkills": ["<only skills candidate is MISSING>"],
+      "matchPercent": <0-100 integer>,
+      "automationRisk": "Medium"
+    },
+    {
+      "id": "backend-dev",
+      "title": "Backend Developer",
+      "requiredSkills": ["nodejs","python","rest api","postgresql","redis","docker","microservices","testing","git","system design"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "Medium"
+    },
+    {
+      "id": "fullstack-dev",
+      "title": "Full Stack Developer",
+      "requiredSkills": ["react","nodejs","typescript","postgresql","docker","rest api","git","css","redis","testing"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "Medium"
+    },
+    {
+      "id": "ml-engineer",
+      "title": "ML Engineer",
+      "requiredSkills": ["python","tensorflow","pytorch","scikit-learn","pandas","numpy","mlflow","sql","docker","statistics"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "Low"
+    },
+    {
+      "id": "devops-engineer",
+      "title": "DevOps Engineer",
+      "requiredSkills": ["docker","kubernetes","aws","terraform","ci/cd","linux","bash","nginx","prometheus","helm"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "Low"
+    },
+    {
+      "id": "data-analyst",
+      "title": "Data Analyst",
+      "requiredSkills": ["sql","python","pandas","data visualization","statistics","excel","tableau","matplotlib","seaborn","reporting"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "High"
+    },
+    {
+      "id": "cloud-engineer",
+      "title": "Cloud Engineer",
+      "requiredSkills": ["aws","azure","gcp","terraform","kubernetes","docker","ci/cd","linux","cloudformation","networking"],
+      "matchedSkills": ["<candidate's actual matching skills>"],
+      "missingSkills": ["<candidate's actual missing skills>"],
+      "matchPercent": <integer>,
+      "automationRisk": "Low"
     }
   ],
-  "certifications": ["cert1", "cert2"]
+  "roadmap": [
+    {
+      "skill": "skill name",
+      "priority": "High" or "Medium" or "Low",
+      "timeline": "X weeks",
+      "reason": "specific reason for this candidate based on their gaps and target roles"
+    }
+  ],
+  "career": {
+    "shortTerm": ["role/action 1", "role/action 2", "role/action 3"],
+    "midTerm": ["role/action 1", "role/action 2", "role/action 3"],
+    "longTerm": ["role/action 1", "role/action 2", "role/action 3"],
+    "summary": "one sentence about this person's career direction"
+  }
 }
 
-CRITICAL RULES:
-- Extract ONLY what is actually written in the resume — NO assumptions, NO additions
-- If a field is not in the resume, use empty string or empty array
-- For yearsOfExperience: add up all work experience durations. If student/fresher with no work exp, use 0
-- For experienceLevel: Beginner = 0-2 yrs or student, Intermediate = 2-5 yrs, Advanced = 5+ yrs or senior/lead/architect
-- For skills: be exhaustive — scan every section (skills, experience, projects, certifications)
-- Normalize skill names to lowercase standard forms
+RULES:
+- skills: extract EVERY technical skill from the entire resume
+- jobMatches: matchPercent = matchedSkills.length / requiredSkills.length * 100, rounded
+- roadmap: top 8 missing skills ordered by impact, with specific reasons for THIS candidate
+- career: based on actual skills and experience level, specific roles not generic advice
+- yearsOfExperience: sum all work experience durations
+- experienceLevel: Beginner=0-2yrs, Intermediate=2-5yrs, Advanced=5+yrs or senior/lead title
 
-RESUME TEXT:
-${rawText.slice(0, 12000)}`;
+RESUME:
+${rawText.slice(0, 10000)}`;
 
   const result = await model.generateContent(prompt);
   let text = result.response.text().trim();
-
-  // Strip any markdown fences
   text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
-
   const start = text.indexOf("{");
   const end   = text.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("Gemini returned no JSON");
-
+  if (start === -1 || end === -1) throw new Error("No JSON in response");
   return JSON.parse(text.slice(start, end + 1));
 }
 
-// ─── Gemini: compute job matches based on actual extracted skills ──────────────
-async function geminiComputeMatches(extracted: any, apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0, maxOutputTokens: 4096 },
-  });
-
-  const prompt = `You are a career matching engine. Analyze this candidate's skills and compute accurate job match scores.
-
-CANDIDATE SKILLS: ${extracted.skills.join(", ")}
-EXPERIENCE LEVEL: ${extracted.experienceLevel} (${extracted.yearsOfExperience} years)
-CURRENT ROLE: ${extracted.currentRole || "Not specified"}
-
-Evaluate this candidate against these 7 roles. For each role, determine which of their skills match and which are missing.
-
-Return ONLY valid JSON array — no markdown, no explanation:
-[
-  {
-    "id": "frontend-dev",
-    "title": "Frontend Developer",
-    "requiredSkills": ["react", "typescript", "javascript", "html", "css", "tailwind", "redux", "jest", "webpack", "accessibility"],
-    "matchedSkills": [<list only skills the candidate ACTUALLY HAS from requiredSkills>],
-    "missingSkills": [<list only skills the candidate is MISSING from requiredSkills>],
-    "matchPercent": <integer 0-100, calculated as matchedSkills.length / requiredSkills.length * 100>,
-    "automationRisk": "Medium"
-  },
-  {
-    "id": "backend-dev",
-    "title": "Backend Developer",
-    "requiredSkills": ["nodejs", "python", "rest api", "postgresql", "redis", "docker", "microservices", "testing", "git", "system design"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "Medium"
-  },
-  {
-    "id": "fullstack-dev",
-    "title": "Full Stack Developer",
-    "requiredSkills": ["react", "nodejs", "typescript", "postgresql", "docker", "rest api", "git", "css", "redis", "testing"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "Medium"
-  },
-  {
-    "id": "ml-engineer",
-    "title": "ML Engineer",
-    "requiredSkills": ["python", "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "mlflow", "sql", "docker", "statistics"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "Low"
-  },
-  {
-    "id": "devops-engineer",
-    "title": "DevOps Engineer",
-    "requiredSkills": ["docker", "kubernetes", "aws", "terraform", "ci/cd", "linux", "bash", "nginx", "prometheus", "helm"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "Low"
-  },
-  {
-    "id": "data-analyst",
-    "title": "Data Analyst",
-    "requiredSkills": ["sql", "python", "pandas", "data visualization", "statistics", "excel", "tableau", "matplotlib", "seaborn", "reporting"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "High"
-  },
-  {
-    "id": "cloud-engineer",
-    "title": "Cloud Engineer",
-    "requiredSkills": ["aws", "azure", "gcp", "terraform", "kubernetes", "docker", "ci/cd", "linux", "cloudformation", "networking"],
-    "matchedSkills": [<candidate's actual matching skills>],
-    "missingSkills": [<candidate's actual missing skills>],
-    "matchPercent": <calculated integer>,
-    "automationRisk": "Low"
-  }
-]
-
-IMPORTANT: Only include a skill in matchedSkills if the candidate ACTUALLY HAS it. Be accurate.`;
-
-  const result = await model.generateContent(prompt);
-  let text = result.response.text().trim();
-  text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
-
-  const start = text.indexOf("[");
-  const end   = text.lastIndexOf("]");
-  if (start === -1 || end === -1) throw new Error("No JSON array in match response");
-
-  const parsed = JSON.parse(text.slice(start, end + 1));
-  return parsed.sort((a: any, b: any) => b.matchPercent - a.matchPercent); // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
-// ─── Gemini: generate roadmap from actual gaps ────────────────────────────────
-async function geminiGenerateRoadmap(extracted: any, jobs: any[], apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0, maxOutputTokens: 3000 },
-  });
-
-  const topJobs = jobs.slice(0, 3);
-  const allGaps = [...new Set(topJobs.flatMap((j: any) => j.missingSkills))]; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-  const prompt = `You are a learning roadmap generator. Create a personalized roadmap for this candidate.
-
-CANDIDATE:
-- Skills: ${extracted.skills.join(", ")}
-- Level: ${extracted.experienceLevel} (${extracted.yearsOfExperience} years)
-- Top matched roles: ${topJobs.map((j: any) => `${j.title} (${j.matchPercent}%)`).join(", ")} // eslint-disable-line @typescript-eslint/no-explicit-any
-- Key skill gaps: ${allGaps.join(", ")}
-
-Generate a prioritized learning roadmap. Return ONLY valid JSON array — no markdown:
-[
-  {
-    "skill": "exact skill name",
-    "priority": "High" or "Medium" or "Low",
-    "timeline": "X weeks",
-    "reason": "specific reason why this skill matters for THIS candidate based on their profile and gaps"
-  }
-]
-
-Rules:
-- Only include skills the candidate is ACTUALLY missing (from their gaps above)
-- Priority: High = appears in 2+ top roles AND candidate has 0 related skills, Medium = appears in 1 top role, Low = nice to have
-- Timeline: realistic estimate (1-8 weeks typically)
-- Reason: specific to this candidate — reference their actual background and target roles
-- Order by priority then impact
-- Max 10 items`;
-
-  const result = await model.generateContent(prompt);
-  let text = result.response.text().trim();
-  text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
-
-  const start = text.indexOf("[");
-  const end   = text.lastIndexOf("]");
-  if (start === -1 || end === -1) throw new Error("No JSON array in roadmap response");
-
-  return JSON.parse(text.slice(start, end + 1));
-}
-
-// ─── Gemini: generate career trajectory ──────────────────────────────────────
-async function geminiGenerateTrajectory(extracted: any, jobs: any[], apiKey: string) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0.2, maxOutputTokens: 1500 },
-  });
-
-  const prompt = `Generate a career trajectory for this candidate based on their ACTUAL profile.
-
-CANDIDATE:
-- Name: ${extracted.name}
-- Current Role: ${extracted.currentRole || "Not specified"}
-- Level: ${extracted.experienceLevel} (${extracted.yearsOfExperience} years)
-- Skills: ${extracted.skills.join(", ")}
-- Top job matches: ${jobs.slice(0, 3).map((j: any) => `${j.title} ${j.matchPercent}%`).join(", ")} // eslint-disable-line @typescript-eslint/no-explicit-any
-
-Return ONLY valid JSON — no markdown:
-{
-  "shortTerm": ["specific role/action 1", "specific role/action 2", "specific role/action 3"],
-  "midTerm": ["specific role/action 1", "specific role/action 2", "specific role/action 3"],
-  "longTerm": ["specific role/action 1", "specific role/action 2", "specific role/action 3"],
-  "summary": "One precise sentence about this person's career direction based on their actual profile"
-}
-
-Rules:
-- shortTerm = 0-12 months: realistic next steps given their CURRENT skills and level
-- midTerm = 1-3 years: after closing key skill gaps
-- longTerm = 3-7 years: leadership or specialization track
-- Each array: exactly 3 specific items
-- Base EVERYTHING on their actual skills and matched roles — no generic advice`;
-
-  const result = await model.generateContent(prompt);
-  let text = result.response.text().trim();
-  text = text.replace(/^```json\s*/im, "").replace(/^```\s*/im, "").replace(/```\s*$/im, "").trim();
-
-  const start = text.indexOf("{");
-  const end   = text.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("No JSON in trajectory response");
-
-  return JSON.parse(text.slice(start, end + 1));
-}
-
-// ─── Main route ───────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -287,102 +160,97 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // 2. Gemini deep extraction
-    let extracted: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+    // 2. ONE Gemini call for everything
+    let geminiResult: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (apiKey) {
       try {
-        extracted = await geminiDeepExtract(rawText, apiKey);
-        console.log(`✓ Gemini extracted: ${extracted.name}, ${extracted.skills?.length} skills, ${extracted.yearsOfExperience} yrs`);
-      } catch (e) {
-        console.error("Gemini extraction failed:", e);
+        geminiResult = await geminiFullAnalysis(rawText, apiKey);
+        console.log(`✓ Gemini: ${geminiResult.name}, ${geminiResult.skills?.length} skills, ${geminiResult.experienceLevel}`);
+      } catch (e: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        console.error("Gemini failed:", e?.message ?? e);
+        // If rate limited, wait 3s and retry once
+        if (e?.message?.includes("429") || e?.message?.includes("quota")) {
+          console.log("Rate limited — retrying in 3s...");
+          await new Promise(r => setTimeout(r, 3000));
+          try {
+            geminiResult = await geminiFullAnalysis(rawText, apiKey);
+            console.log(`✓ Gemini retry succeeded: ${geminiResult.name}`);
+          } catch (e2) {
+            console.error("Gemini retry also failed:", e2);
+          }
+        }
       }
     }
 
-    // Fallback extraction if Gemini fails
-    if (!extracted || !extracted.skills?.length) {
+    // 3. Build resume — Gemini data + keyword scan merged
+    const keywordSkills = extractSkillsFromText(rawText);
+
+    let resume: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (geminiResult?.name) {
+      const geminiSkills = [
+        ...(geminiResult.skills ?? []),
+      ].map((s: string) => s.toLowerCase().trim()).filter((s: string) => s.length > 1);
+
+      const mergedSkills = [...new Set([...geminiSkills, ...keywordSkills])];
+
+      resume = {
+        rawText,
+        name:              geminiResult.name || extractName(rawText),
+        email:             geminiResult.email || extractEmail(rawText),
+        phone:             geminiResult.phone || "",
+        location:          geminiResult.location || "",
+        currentRole:       geminiResult.currentRole || "",
+        yearsOfExperience: geminiResult.yearsOfExperience ?? 0,
+        experienceLevel:   geminiResult.experienceLevel ?? "Intermediate",
+        education:         geminiResult.education || "",
+        summary:           geminiResult.summary || "",
+        skills:            mergedSkills,
+        workExperience:    geminiResult.workExperience || [],
+        projects:          geminiResult.projects || [],
+        certifications:    geminiResult.certifications || [],
+      };
+    } else {
+      // Full local fallback
       const skills = extractSkillsFromText(rawText);
       const { level, years } = detectExperienceLevel(rawText, skills);
-      extracted = {
-        name: extractName(rawText),
-        email: extractEmail(rawText),
-        phone: "",
-        location: "",
-        currentRole: "",
+      resume = {
+        rawText,
+        name:              extractName(rawText),
+        email:             extractEmail(rawText),
+        phone:             "",
+        location:          "",
+        currentRole:       "",
         yearsOfExperience: years,
-        experienceLevel: level,
-        education: "",
-        summary: "",
+        experienceLevel:   level,
+        education:         "",
+        summary:           "",
         skills,
-        workExperience: [],
-        projects: [],
-        certifications: [],
+        workExperience:    [],
+        projects:          [],
+        certifications:    [],
       };
     }
 
-    // Merge keyword scan with Gemini skills for maximum coverage
-    const keywordSkills = extractSkillsFromText(rawText);
-    const allSkills = [...new Set([
-      ...(extracted.skills ?? []).map((s: string) => s.toLowerCase().trim()),
-      ...keywordSkills,
-    ])].filter((s: string) => s.length > 1);
-    extracted.skills = allSkills;
-
-    // Build resume object
-    const resume = {
-      rawText,
-      name:              extracted.name || "User",
-      email:             extracted.email || "",
-      phone:             extracted.phone || "",
-      location:          extracted.location || "",
-      currentRole:       extracted.currentRole || "",
-      yearsOfExperience: extracted.yearsOfExperience ?? 0,
-      experienceLevel:   extracted.experienceLevel ?? "Intermediate",
-      education:         extracted.education || "",
-      summary:           extracted.summary || "",
-      skills:            extracted.skills,
-      workExperience:    extracted.workExperience || [],
-      projects:          extracted.projects || [],
-      certifications:    extracted.certifications || [],
-    };
-
-    // 3. Compute job matches — Gemini first, fallback to local
-    let jobs: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (apiKey) {
-      try {
-        jobs = await geminiComputeMatches(extracted, apiKey);
-        console.log(`✓ Gemini computed ${jobs.length} job matches`);
-      } catch (e) {
-        console.error("Gemini job match failed:", e);
-      }
-    }
-    if (!jobs.length) {
+    // 4. Job matches — from Gemini or local
+    let jobs: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (geminiResult?.jobMatches?.length) {
+      jobs = geminiResult.jobMatches.sort((a: any, b: any) => b.matchPercent - a.matchPercent); // eslint-disable-line @typescript-eslint/no-explicit-any
+    } else {
       jobs = computeJobMatches(resume.skills);
     }
 
-    // 4. Generate roadmap — Gemini first, fallback to local
-    let roadmap: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (apiKey) {
-      try {
-        roadmap = await geminiGenerateRoadmap(extracted, jobs, apiKey);
-        console.log(`✓ Gemini generated ${roadmap.length} roadmap items`);
-      } catch (e) {
-        console.error("Gemini roadmap failed:", e);
-        roadmap = generateRoadmap(jobs);
-      }
+    // 5. Roadmap — from Gemini or local
+    let roadmap: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (geminiResult?.roadmap?.length) {
+      roadmap = geminiResult.roadmap;
     } else {
       roadmap = generateRoadmap(jobs);
     }
 
-    // 5. Generate career trajectory — Gemini first, fallback to local
-    let career: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (apiKey) {
-      try {
-        career = await geminiGenerateTrajectory(extracted, jobs, apiKey);
-        console.log(`✓ Gemini generated career trajectory`);
-      } catch (e) {
-        console.error("Gemini trajectory failed:", e);
-        career = generateCareerTrajectory(resume, jobs);
-      }
+    // 6. Career trajectory — from Gemini or local
+    let career: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (geminiResult?.career?.shortTerm?.length) {
+      career = geminiResult.career;
     } else {
       career = generateCareerTrajectory(resume, jobs);
     }
